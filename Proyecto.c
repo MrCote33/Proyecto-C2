@@ -8,6 +8,7 @@ struct Marcas{
 	
 	char *Marca;
 	struct Marcas *SgteMa;
+	struct Modelos *SgteMo;
 	
 };
 
@@ -15,6 +16,7 @@ struct Modelos{
 	
 	char *Modelo;
 	struct Modelos *SgteMo;
+	struct Datos *SgteDs;
 	
 };
 
@@ -30,66 +32,6 @@ struct Datos{
 	struct Datos *SgteDs;
 	
 };
-
-struct Marcas *Ingresar_Marca(struct Marcas *Inicio, char Dato[]){
-	
-	struct Marcas *Nuevo;
-	
-	Nuevo = malloc(sizeof(struct Marcas));
-	Nuevo -> Marca = Dato;
-	printf("%s ",Nuevo -> Marca);
-	Nuevo -> SgteMa = Inicio;
-	
-	return Nuevo;
-	
-}
-
-struct Modelos *Ingresar_Modelo(struct Modelos *Inicio, char Dato[]){
-	
-	struct Modelos *Nuevo;
-	
-	Nuevo = malloc(sizeof(struct Modelos));
-	Nuevo -> Modelo = Dato;
-	printf("%s ",Nuevo -> Modelo);
-	Nuevo -> SgteMo = Inicio;
-	
-	return Nuevo;
-	
-}
-
-struct Datos *Ingresar_Datos(struct Datos *Comienzo, char Linea[], int Start){
-	
-	struct Datos *Nuevo;
-	char Dato[MAX];
-	int Inicio = Start;
-	Nuevo = malloc(sizeof(struct Datos));
-	
-	Inicio = PuntoComa(Inicio,Linea,Dato);
-	Nuevo -> Year = atoi(Dato);
-	printf("%d ",Nuevo -> Year);
-	Inicio = PuntoComa(Inicio,Linea,Dato);
-	Nuevo -> Tipo = Dato;
-	printf("%s ",Nuevo -> Tipo);
-	Inicio = PuntoComa(Inicio,Linea,Dato);
-	Nuevo -> Desplazamiento = atof(Dato);
-	printf("%.1f ",Nuevo -> Desplazamiento);
-	Inicio = PuntoComa(Inicio,Linea,Dato);
-	Nuevo -> Cilindros = atoi(Dato);
-	printf("%d ",Nuevo -> Cilindros);
-	Inicio = PuntoComa(Inicio,Linea,Dato);
-	Nuevo -> Combustible = Dato;
-	printf("%s ",Nuevo -> Combustible);
-	Inicio = PuntoComa(Inicio,Linea,Dato);
-	Nuevo -> Cambio = Dato;
-	printf("%s ",Nuevo -> Cambio);
-	Inicio = PuntoComa(Inicio,Linea,Dato);
-	Nuevo -> Traccion = Dato;
-	printf("%s\n",Nuevo -> Traccion);
-	
-	Nuevo -> SgteDs = Comienzo;
-	return Nuevo;
-	
-}
 
 int PuntoComa(int Inicio, char Linea[], char Regreso[]){
 	
@@ -113,9 +55,9 @@ int PuntoComa(int Inicio, char Linea[], char Regreso[]){
 	
 			}
 
-			strcpy(Regreso,Dato);	
+			strcpy(Regreso,Dato);
 			return Final+1;
-				
+			
 		}
 		
 	}
@@ -129,7 +71,7 @@ main(){
 	char Dato[MAX];
 
 	FILE *Vehiculos;
-	Vehiculos = fopen("vehiculos-chico.csv","r");
+	Vehiculos = fopen("vehiculos-diminuto.csv","r");
 	
 	Inicio = 0;
 	
@@ -141,15 +83,15 @@ main(){
 	AllDatos = NULL;
 	
 	while(fgets(Linea,LARGO,Vehiculos) != NULL){
+		
+		for(ContPuntoComa = 0; ContPuntoComa < 9; ContPuntoComa++){
 			
-		Inicio = PuntoComa(Inicio,Linea,Dato);
-		Marca = Ingresar_Marca(Marca,Dato);
+			Inicio = PuntoComa(Inicio,Linea,Dato);
+			printf("%s ",Dato);
+			
+		}
 		
-		Inicio = PuntoComa(Inicio,Linea,Dato);
-		Modelo = Ingresar_Modelo(Modelo,Dato);
-		
-		AllDatos = Ingresar_Datos(AllDatos,Linea,Inicio);
-		
+		printf("\n");
 		Inicio = 0;
 
 	}
