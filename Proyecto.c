@@ -55,7 +55,6 @@ struct Informacion *ingresar_info(struct Informacion *ComienzoInfo, char Linea[]
 			
 			if(Contador == 3){
 				NuevaInfo->year = atoi(help);
-				printf("%d\n",NuevaInfo->year);
 			}
 			if(Contador == 4){
 				strcpy(NuevaInfo->tipo,help);
@@ -84,8 +83,7 @@ struct Informacion *ingresar_info(struct Informacion *ComienzoInfo, char Linea[]
 	}
 	
 	NuevaInfo->sgte = ComienzoInfo;
-	system("pause");
-	return ComienzoInfo;
+	return NuevaInfo;
 	
 }
 
@@ -260,6 +258,79 @@ struct Marca *leer_marca(struct Marca *ComienzoMa, char Linea[]){
 	
 }
 
+void buscar_desplaza(struct Marca *marca, struct Modelo *modelo, struct Informacion *info, float desplaza){
+	
+	struct Informacion *Puntero;
+	int Contador;
+	
+	Contador = 0;
+	Puntero = info;
+	
+	while(Puntero != NULL){
+		
+		if(Puntero->desplazamiento == desplaza){
+			
+			Contador++;
+			
+			if(Contador == 1){
+				printf("\nMarca: %s\n\tModelo: %s\n",marca->marca,modelo->modelo);
+			}
+			
+			printf("\t\t%d %s %.1f %d %s %s %s\n",Puntero->year,Puntero->tipo,Puntero->desplazamiento,Puntero->cilindros,Puntero->combustible,Puntero->transmision,Puntero->traccion);
+			
+		}
+		
+		Puntero = Puntero->sgte;
+	}
+	
+	printf("\n");
+	
+	if(Contador == 0){
+		printf("\nNo se encontraron modelos con desplazamiento %.1f para el %s %s.\n\n",desplaza,marca->marca,modelo->modelo);
+	}
+	
+}
+
+void verificar(struct Marca *Comienzo){
+	
+	struct Marca *marca;
+	struct Modelo *modelo;
+	struct Informacion *info;
+	
+	char fabricante[MAX_DATOS];
+	char tipo_modelo[MAX_DATOS];
+	float desplaza;
+	
+	system("cls");
+	
+	printf("\nLa entrada de las variables debe respetar Mayusculas, Minusculas y Espacios\n\n");
+	
+	printf("Ingresa la marca del vehiculo: ");
+	scanf("%s",&fabricante);
+	printf("Ingresa el modelo del vehiculo: ");
+	scanf("%s",&tipo_modelo);
+	printf("Ingrese el desplazamiento del vehiculo: ");
+	scanf("%f",&desplaza);
+	
+	marca = buscar_marca(Comienzo,fabricante);
+	
+	if(marca != NULL){
+		modelo = marca->model;
+		modelo = buscar_modelo(modelo,tipo_modelo);
+		if(modelo != NULL){
+			info = modelo->info;
+			buscar_desplaza(marca,modelo,info,desplaza);
+		}else{
+			printf("No se encontro tal modelo.\n");
+		}
+	}else{
+		printf("No se encontro tal marca.\n");
+	}
+	
+	system("pause");
+	
+}
+
 void search_year(struct Marca *marca, struct Modelo *modelo, struct Informacion *info, int Year_Start, int Year_Stop){
 	
 	struct Informacion *Puntero;
@@ -270,7 +341,7 @@ void search_year(struct Marca *marca, struct Modelo *modelo, struct Informacion 
 	
 	while(Puntero != NULL){
 		
-		if(Puntero->year <= Year_Start && Puntero->year >= Year_Stop){
+		if(Puntero->year >= Year_Start && Puntero->year <= Year_Stop){
 			
 			Contador++;
 			
@@ -283,9 +354,10 @@ void search_year(struct Marca *marca, struct Modelo *modelo, struct Informacion 
 		Puntero = Puntero->sgte;
 		
 	}
+	printf("\n");
 	
 	if(Contador == 0){
-		printf("No se encontraron modelos entre el año %d y %d para el %s %s.\n",Year_Start,Year_Stop,marca->marca,modelo->modelo);
+		printf("No se encontraron modelos entre el año %d y %d para el %s %s.\n\n",Year_Start,Year_Stop,marca->marca,modelo->modelo);
 	}
 	
 }
@@ -345,13 +417,13 @@ main(int argc, char *argv[]){
 	int opcion;
 	
 	//Lee archivo declarado en la consola y lo abre.
-	if(argc != 1){
+	if(argc != 2){
 		printf("\nNo se ha ingresado un archivo correctamente.\nSe ingresaron %d cuando se esperan 2.\n",argc);
 		exit(EXIT_FAILURE);
 	}
 	
 	FILE *Vehiculos;
-	Vehiculos = fopen("vehiculos-diminuto.csv","r");
+	Vehiculos = fopen(argv[1],"r");
 	
 	//Realiza el 
 	struct Marca *inicio;
@@ -381,9 +453,10 @@ main(int argc, char *argv[]){
 					buscar_auto(inicio);
 					break;
 				case 2:
-					//verificar(inicio);
+					verificar(inicio);
 					break;
 				case 3:
+					system("cls");
 					break;
 				default:
 					break;
