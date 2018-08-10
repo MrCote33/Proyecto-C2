@@ -1,3 +1,6 @@
+//Basado en un ejemplo que realizo en Profesor Federico Meza (hoja.c)
+//Creado y provado unicamente en Windows 10
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -278,12 +281,14 @@ void buscar_desplaza(struct Marca *marca, struct Modelo *modelo, struct Informac
 	Contador = 0;
 	Puntero = info;
 	
+	printf("\n");
+	
 	while(Puntero != NULL){
 		
 		if(Puntero->desplazamiento == desplaza){
 			
 			Contador++;
-			printf("\t\t%d %s %.1f %d %s %s %s\n",Puntero->year,Puntero->tipo,Puntero->desplazamiento,Puntero->cilindros,Puntero->combustible,Puntero->transmision,Puntero->traccion);
+			printf("%d %s %.1f %d %s %s %s\n",Puntero->year,Puntero->tipo,Puntero->desplazamiento,Puntero->cilindros,Puntero->combustible,Puntero->transmision,Puntero->traccion);
 			
 		}
 		
@@ -353,7 +358,7 @@ void busqueda_years(struct Marca *marca, struct Modelo *modelo, struct Informaci
 		if(Puntero->year >= Year_Start && Puntero->year <= Year_Stop){
 			
 			Contador++;
-			printf("\t\t%d %s %.1f %d %s %s %s\n",Puntero->year,Puntero->tipo,Puntero->desplazamiento,Puntero->cilindros,Puntero->combustible,Puntero->transmision,Puntero->traccion);
+			printf("%d %s %.1f %d %s %s %s\n",Puntero->year,Puntero->tipo,Puntero->desplazamiento,Puntero->cilindros,Puntero->combustible,Puntero->transmision,Puntero->traccion);
 			
 		}
 		Puntero = Puntero->sgte;
