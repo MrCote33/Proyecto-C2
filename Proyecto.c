@@ -35,7 +35,7 @@ struct Marca{
 
 struct Informacion *ingresar_info(struct Informacion *ComienzoInfo, char Linea[]){
 	
-	struct Informacion *NuevaInfo;
+	struct Informacion *NuevaInfo, *Puntero;
 	char help[MAX_DATOS];
 	int Num1, Num2, Contador;
 	
@@ -82,8 +82,20 @@ struct Informacion *ingresar_info(struct Informacion *ComienzoInfo, char Linea[]
 		
 	}
 	
-	NuevaInfo->sgte = ComienzoInfo;
-	return NuevaInfo;
+	if(ComienzoInfo == NULL || NuevaInfo->year < ComienzoInfo->year){
+		NuevaInfo->sgte = ComienzoInfo;
+		return NuevaInfo;
+	}
+	
+	Puntero = ComienzoInfo;
+	
+	while(Puntero->sgte != NULL && Puntero->sgte->year < NuevaInfo->year){
+		Puntero = Puntero->sgte;
+	}
+	
+	NuevaInfo->sgte = Puntero->sgte;
+	Puntero->sgte = NuevaInfo;
+	return ComienzoInfo;
 	
 }
 
@@ -271,11 +283,6 @@ void buscar_desplaza(struct Marca *marca, struct Modelo *modelo, struct Informac
 		if(Puntero->desplazamiento == desplaza){
 			
 			Contador++;
-			
-			if(Contador == 1){
-				printf("\nMarca: %s\n\tModelo: %s\n",marca->marca,modelo->modelo);
-			}
-			
 			printf("\t\t%d %s %.1f %d %s %s %s\n",Puntero->year,Puntero->tipo,Puntero->desplazamiento,Puntero->cilindros,Puntero->combustible,Puntero->transmision,Puntero->traccion);
 			
 		}
@@ -291,7 +298,7 @@ void buscar_desplaza(struct Marca *marca, struct Modelo *modelo, struct Informac
 	
 }
 
-void verificar(struct Marca *Comienzo){
+void verificar_vehiculo(struct Marca *Comienzo){
 	
 	struct Marca *marca;
 	struct Modelo *modelo;
@@ -309,7 +316,8 @@ void verificar(struct Marca *Comienzo){
 	scanf("%s",&fabricante);
 	fflush(stdin);
 	printf("Ingresa el modelo del vehiculo: ");
-	gets(tipo_modelo);
+	fgets(tipo_modelo,MAX_DATOS,stdin);
+	tipo_modelo[strlen(tipo_modelo)-1] = '\0';
 	printf("Ingrese el desplazamiento del vehiculo: ");
 	scanf("%f",&desplaza);
 	
@@ -332,7 +340,7 @@ void verificar(struct Marca *Comienzo){
 	
 }
 
-void search_year(struct Marca *marca, struct Modelo *modelo, struct Informacion *info, int Year_Start, int Year_Stop){
+void busqueda_years(struct Marca *marca, struct Modelo *modelo, struct Informacion *info, int Year_Start, int Year_Stop){
 	
 	struct Informacion *Puntero;
 	int Contador;
@@ -345,16 +353,13 @@ void search_year(struct Marca *marca, struct Modelo *modelo, struct Informacion 
 		if(Puntero->year >= Year_Start && Puntero->year <= Year_Stop){
 			
 			Contador++;
-			
-			if(Contador == 1){
-				printf("\nMarca: %s\n\tModelo: %s\n",marca->marca,modelo->modelo);
-			}
 			printf("\t\t%d %s %.1f %d %s %s %s\n",Puntero->year,Puntero->tipo,Puntero->desplazamiento,Puntero->cilindros,Puntero->combustible,Puntero->transmision,Puntero->traccion);
 			
 		}
 		Puntero = Puntero->sgte;
 		
 	}
+	
 	printf("\n");
 	
 	if(Contador == 0){
@@ -371,7 +376,7 @@ void buscar_auto(struct Marca *Comienzo){
 	
 	char fabricante[MAX_DATOS];
 	char tipo_modelo[MAX_DATOS];
-	int Year_Start, Year_Stop;
+	int Year_Start, Year_Stop, Year_Temp;
 	
 	system("cls");
 	
@@ -381,19 +386,21 @@ void buscar_auto(struct Marca *Comienzo){
 	scanf("%s",&fabricante);
 	fflush(stdin);
 	printf("Ingresa el modelo del vehiculo: ");
-	gets(tipo_modelo);
+	fgets(tipo_modelo,MAX_DATOS,stdin);
+	tipo_modelo[strlen(tipo_modelo)-1] = '\0';
 	
-	do{
-		printf("Ingrese el rango de años [Año Inicio] [Año Final]: ");
-		scanf("%d %d",&Year_Start,&Year_Stop);
-		printf("\n");
-		
-		if(Year_Stop < Year_Start){
-			printf("El Año Inicio es mayor que el Año Final!\n");
-		}
-		
-	}while(Year_Stop < Year_Start);
+	printf("Ingrese el rango de años [Año Inicio] [Año Final]: ");
+	scanf("%d %d",&Year_Start,&Year_Stop);
+	printf("\n");
 	
+	if(Year_Stop < Year_Start){
+		
+		Year_Temp = Year_Stop;
+		Year_Stop = Year_Start;
+		Year_Start = Year_Temp;
+		
+	}
+
 	marca = buscar_marca(Comienzo,fabricante);
 	
 	if(marca != NULL){
@@ -401,7 +408,7 @@ void buscar_auto(struct Marca *Comienzo){
 		modelo = buscar_modelo(modelo,tipo_modelo);
 		if(modelo != NULL){
 			info = modelo->info;
-			search_year(marca,modelo,info,Year_Start,Year_Stop);
+			busqueda_years(marca,modelo,info,Year_Start,Year_Stop);
 		}else{
 			printf("No se encontro tal modelo.\n");
 		}
@@ -418,23 +425,20 @@ main(int argc, char *argv[]){
 	char Linea[MAX_LARGO];
 	int opcion;
 	
-	//Lee archivo declarado en la consola y lo abre.
-	if(argc != 2){
-		printf("\nNo se ha ingresado un archivo correctamente.\nSe ingresaron %d cuando se esperan 2.\n",argc);
-		exit(EXIT_FAILURE);
-	}
-	
 	FILE *Vehiculos;
 	Vehiculos = fopen(argv[1],"r");
 	
-	//Realiza el 
 	struct Marca *inicio;
 	inicio = NULL;
 
-	if(Vehiculos != NULL){
+	if(argc != 2 && Vehiculos == NULL){
+		printf("\nArchivo ingresado no es valido o no se encontro en la carpeta\n");
+		exit(EXIT_FAILURE);
+	}else{
 		while(fgets(Linea,MAX_LARGO,Vehiculos) != NULL){
 			inicio = leer_marca(inicio,Linea);
 		}
+		fclose(Vehiculos);
 		do{
 			system("cls");
 			printf("[|] Seleccione una opcion [|]\n");
@@ -455,7 +459,7 @@ main(int argc, char *argv[]){
 					buscar_auto(inicio);
 					break;
 				case 2:
-					verificar(inicio);
+					verificar_vehiculo(inicio);
 					break;
 				case 3:
 					system("cls");
@@ -466,11 +470,6 @@ main(int argc, char *argv[]){
 			}
 			
 		}while(opcion != 3);
-		
-		fclose(Vehiculos);
-		
-	}else{
-		printf("Archivo ingresado no se encontro en la carpeta\n");
-		exit(EXIT_FAILURE);
+
 	}
 }
