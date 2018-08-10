@@ -307,8 +307,9 @@ void verificar(struct Marca *Comienzo){
 	
 	printf("Ingresa la marca del vehiculo: ");
 	scanf("%s",&fabricante);
+	fflush(stdin);
 	printf("Ingresa el modelo del vehiculo: ");
-	scanf("%s",&tipo_modelo);
+	gets(tipo_modelo);
 	printf("Ingrese el desplazamiento del vehiculo: ");
 	scanf("%f",&desplaza);
 	
@@ -378,8 +379,9 @@ void buscar_auto(struct Marca *Comienzo){
 	
 	printf("Ingresa la marca del vehiculo: ");
 	scanf("%s",&fabricante);
+	fflush(stdin);
 	printf("Ingresa el modelo del vehiculo: ");
-	scanf("%s",&tipo_modelo);
+	gets(tipo_modelo);
 	
 	do{
 		printf("Ingrese el rango de años [Año Inicio] [Año Final]: ");
