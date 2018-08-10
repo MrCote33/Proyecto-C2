@@ -1,189 +1,401 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MAX 50
-#define LARGO 150
+#define MAX_LARGO 150
+#define MAX_DATOS 50
 
-struct Marcas{
+struct Informacion{
 	
-	char *Marca;
-	struct Marcas *SgteMa;
-	struct Modelos *SgteMo;
+	int year;
+	char tipo[MAX_DATOS];
+	float desplazamiento;
+	int cilindros;
+	char combustible[MAX_DATOS];
+	char transmision[MAX_DATOS];
+	char traccion[MAX_DATOS];
+	struct Informacion *sgte;
 	
 };
 
-struct Modelos{
+struct Modelo{
 	
-	char *Modelo;
-	struct Modelos *SgteMo;
-	struct Datos *SgteDs;
-	
-};
-
-struct Datos{
-	
-	int Year;
-	char *Tipo;
-	float Desplazamiento;
-	int Cilindros;
-	char *Combustible;
-	char *Cambio;
-	char *Traccion;
-	struct Datos *SgteDs;
+	char modelo[MAX_DATOS];
+	struct Modelo *sgte;
+	struct Informacion *info;
 	
 };
 
-int PuntoComa(int Inicio, char Linea[], char Regreso[]){
+struct Marca{
 	
-	int Largo, Num, Total, Cont, Final;
-	char Dato[MAX];
+	char marca[MAX_DATOS];
+	struct Modelo *model;
+	struct Marca *sgte;
 	
-	Largo = strlen(Linea);
+};
+
+struct Informacion *ingresar_info(struct Informacion *ComienzoInfo, char Linea[]){
 	
-	for(Num = Inicio; Num < Largo; Num++){
+	struct Informacion *NuevaInfo;
+	char help[MAX_DATOS];
+	int Num1, Num2, Contador;
+	
+	Num2 = 0;
+	Contador = 0;
+	
+	NuevaInfo = malloc(sizeof(struct Informacion));
+	
+	for(Num1 = 0; Num1 < strlen(Linea); Num1++, Num2++){
 		
-		if(Linea[Num] == ';' || Linea[Num+1] == '\0'){	
-				
-			Final = Num;
-			Cont = 0;
+		help[Num2] = Linea[Num1];
+		
+		if(help[Num2] == ';' || help[Num2] == '\n'){
 			
-			for(Total = Inicio; Total < Final; Total++){
-	
-				Dato[Cont] = Linea[Total];
-				Dato[Cont+1] = '\0';
-				Cont++;
-	
+			Contador++;
+			help[Num2] = '\0';
+			
+			if(Contador == 3){
+				NuevaInfo->year = atoi(help);
+				printf("%d\n",NuevaInfo->year);
 			}
-
-			strcpy(Regreso,Dato);
-			return Final+1;
+			if(Contador == 4){
+				strcpy(NuevaInfo->tipo,help);
+			}
+			if(Contador == 5){
+				NuevaInfo->desplazamiento = atof(help);
+			}
+			if(Contador == 6){
+				NuevaInfo->cilindros = atoi(help);
+			}
+			if(Contador == 7){
+				strcpy(NuevaInfo->combustible,help);
+			}
+			if(Contador == 8){
+				strcpy(NuevaInfo->transmision,help);
+			}
+			if(Contador == 9){
+				strcpy(NuevaInfo->traccion,help);
+			}
+			
+			Num2 = -1;
+			strcpy(help," ");
 			
 		}
 		
 	}
-
-}
-
-struct Marcas *Insertar_Marca(struct Marcas *Comienzo, char Dato[]){
 	
-	struct Marcas *NuevaMarca;
-	
-	NuevaMarca = malloc(sizeof(struct Marcas));
-	NuevaMarca->Marca = Dato;
-	NuevaMarca->SgteMa = Comienzo;
-	
-	return NuevaMarca;
+	NuevaInfo->sgte = ComienzoInfo;
+	system("pause");
+	return ComienzoInfo;
 	
 }
 
-struct Modelos *Insertar_Modelo(struct Modelos *Comienzo, char Dato[]){
+struct Modelo *buscar_modelo(struct Modelo *ComienzoMo, char Busqueda[]){
 	
-	struct Modelos *NuevoModelo;
+	struct Modelo *Puntero;
 	
-	NuevoModelo = malloc(sizeof(struct Marcas));
-	NuevoModelo->Modelo = Dato;
-	NuevoModelo->SgteMo = Comienzo;
+	Puntero = ComienzoMo;
 	
-	return NuevoModelo;
+	while(Puntero != NULL && strcmp(Busqueda,Puntero->modelo) != 0){
+		Puntero = Puntero->sgte;
+	}
+	return Puntero;
 	
 }
 
-struct Datos *Insertar_Datos(struct Datos *Comienzo, char Dato[], int Contador){
+struct Modelo *ingresar_modelo(struct Modelo *ComienzoMo, char *modelo){
 	
-	struct Datos *NuevoDato;
+	struct Modelo *NuevoMo, *Puntero;
 	
-	NuevoDato = malloc(sizeof(struct Datos));
+	NuevoMo = malloc(sizeof(struct Modelo));
+	strcpy(NuevoMo->modelo,modelo);
 	
-	if(Contador == 2){
-		NuevoDato->Year = atoi(Dato);
+	if(ComienzoMo == NULL || strcmp(NuevoMo->modelo,ComienzoMo->modelo) < 0){
+		NuevoMo->sgte = ComienzoMo;
+		return NuevoMo;
 	}
-	if(Contador == 3){
-		NuevoDato->Tipo = Dato;
+	
+	Puntero = ComienzoMo;
+	
+	while(Puntero->sgte != NULL && strcmp(Puntero->sgte->modelo,modelo) < 0){
+		Puntero = Puntero->sgte;
 	}
-	if(Contador == 4){
-		NuevoDato->Desplazamiento = strtof(Dato,NULL);
+	
+	NuevoMo->sgte = Puntero->sgte;
+	Puntero->sgte = NuevoMo;
+	return ComienzoMo;
+	
+}
+
+struct Modelo *leer_modelo(struct Modelo *ComienzoMo, char Linea[]){
+	
+	struct Modelo *NuevoMo;
+	char help[MAX_DATOS];
+	char modelo[MAX_DATOS];
+	int Num1, Num2, Contador;
+	
+	Num2 = 0;
+	Contador = 0;
+	
+	for(Num1 = 0; Num1 < strlen(Linea); Num1++, Num2++){
+		
+		help[Num2] = Linea[Num1];
+		
+		if(help[Num2] == ';' || help[Num2] == '\n'){
+			
+			Contador++;
+			help[Num2] = '\0';
+			
+			if(Contador == 2){
+				strcpy(modelo,help);
+			}
+			if(Contador == 3){
+				Num1 = strlen(Linea);
+			}
+			
+			Num2 = -1;
+			strcpy(help," ");
+			
+		}
+		
 	}
-	if(Contador == 5){
-		NuevoDato->Cilindros = atoi(Dato);
+	
+	NuevoMo = buscar_modelo(ComienzoMo,modelo);
+	
+	if(NuevoMo == NULL){
+		ComienzoMo = ingresar_modelo(ComienzoMo,modelo);
+		NuevoMo = buscar_modelo(ComienzoMo,modelo);
+		NuevoMo->info = NULL;
 	}
-	if(Contador == 6){
-		NuevoDato->Combustible = Dato;
+	
+	NuevoMo->info = ingresar_info(NuevoMo->info,Linea);
+	return ComienzoMo;
+	
+}
+
+struct Marca *buscar_marca(struct Marca *ComienzoMa, char *Busqueda){
+	
+	struct Marca *Puntero;
+	
+	Puntero = ComienzoMa;
+	
+	while(Puntero != NULL && strcmp(Busqueda,Puntero->marca) != 0){
+		Puntero = Puntero->sgte;
 	}
-	if(Contador == 7){
-		NuevoDato->Cambio = Dato;
+	
+	return Puntero;
+	
+}
+
+struct Marca *ingresar_marca(struct Marca *ComienzoMa, char *marca){
+	
+	struct Marca *NuevaMa, *Puntero;
+	
+	//Crea la marca, la ordena y la incluye en la lista
+	
+	NuevaMa =  malloc(sizeof(struct Marca));
+	strcpy(NuevaMa->marca,marca);
+	
+	if(ComienzoMa == NULL || strcmp(NuevaMa->marca,ComienzoMa->marca) < 0){
+		NuevaMa->sgte = ComienzoMa;
+		return NuevaMa;
 	}
-	if(Contador == 8){
-		NuevoDato->Traccion = Dato;
+	
+	Puntero = ComienzoMa;
+	
+	//While que recorre la lista para ordenarla
+	
+	while(Puntero->sgte != NULL && strcmp(Puntero->sgte->marca,marca) < 0){
+		Puntero = Puntero->sgte;
+	}
+	
+	NuevaMa->sgte = Puntero->sgte;
+	Puntero->sgte = NuevaMa;
+	return ComienzoMa;
+	
+}
+
+struct Marca *leer_marca(struct Marca *ComienzoMa, char Linea[]){
+	
+	struct Marca *NuevaMa;
+	char help[MAX_DATOS];
+	char marca[MAX_DATOS];
+	int Num, Contador;
+	
+	Contador = 0;
+	
+	//Ciclo que corta informacion por Punto y Coma.
+	for(Num = 0; Num < strlen(Linea); Num++){
+		
+		help[Num] = Linea[Num];
+		
+		if(help[Num] == ';' || help[Num] == '\n'){
+			
+			Contador++;
+			help[Num] = '\0';
+			
+			if(Contador == 1){
+				strcpy(marca,help);
+			}
+			if(Contador == 2){
+				Num = strlen(Linea);
+			}
+			
+			strcpy(help," ");
+			
+		}
+		
+	}
+	
+	//Busca si la marca ya existe
+	NuevaMa = buscar_marca(ComienzoMa,marca);
+	
+	//Accion a realizar si la marca no existe
+	if(NuevaMa == NULL){
+		ComienzoMa = ingresar_marca(ComienzoMa,marca);
+		NuevaMa = buscar_marca(ComienzoMa,marca);
+		NuevaMa->model = NULL;
+	}
+	NuevaMa->model = leer_modelo(NuevaMa->model,Linea);
+	return ComienzoMa;
+	
+}
+
+void search_year(struct Marca *marca, struct Modelo *modelo, struct Informacion *info, int Year_Start, int Year_Stop){
+	
+	struct Informacion *Puntero;
+	int Contador;
+	
+	Contador = 0;
+	Puntero = info;
+	
+	while(Puntero != NULL){
+		
+		if(Puntero->year <= Year_Start && Puntero->year >= Year_Stop){
+			
+			Contador++;
+			
+			if(Contador == 1){
+				printf("\nMarca: %s\n\tModelo: %s\n",marca->marca,modelo->modelo);
+			}
+			printf("\t\t%d %s %.1f %d %s %s %s\n",Puntero->year,Puntero->tipo,Puntero->desplazamiento,Puntero->cilindros,Puntero->combustible,Puntero->transmision,Puntero->traccion);
+			
+		}
+		Puntero = Puntero->sgte;
+		
+	}
+	
+	if(Contador == 0){
+		printf("No se encontraron modelos entre el año %d y %d para el %s %s.\n",Year_Start,Year_Stop,marca->marca,modelo->modelo);
 	}
 	
 }
 
-main(){
+void buscar_auto(struct Marca *Comienzo){
 	
-	int Inicio, ContPuntoComa;
-	char Linea[LARGO];
-	char Dato[MAX];
+	struct Marca *marca;
+	struct Modelo *modelo;
+	struct Informacion *info;
+	
+	char fabricante[MAX_DATOS];
+	char tipo_modelo[MAX_DATOS];
+	int Year_Start, Year_Stop;
+	
+	system("cls");
+	
+	printf("\nLa entrada de las variables debe respetar Mayusculas, Minusculas y Espacios\n\n");
+	
+	printf("Ingresa la marca del vehiculo: ");
+	scanf("%s",&fabricante);
+	printf("Ingresa el modelo del vehiculo: ");
+	scanf("%s",&tipo_modelo);
+	
+	do{
+		printf("Ingrese el rango de años [Año Inicio] [Año Final]: ");
+		scanf("%d %d",&Year_Start,&Year_Stop);
+		printf("\n");
+		
+		if(Year_Stop < Year_Start){
+			printf("El Año Inicio es mayor que el Año Final!\n");
+		}
+		
+	}while(Year_Stop < Year_Start);
+	
+	marca = buscar_marca(Comienzo,fabricante);
+	
+	if(marca != NULL){
+		modelo = marca->model;
+		modelo = buscar_modelo(modelo,tipo_modelo);
+		if(modelo != NULL){
+			info = modelo->info;
+			search_year(marca,modelo,info,Year_Start,Year_Stop);
+		}else{
+			printf("No se encontro tal modelo.\n");
+		}
+	}else{
+		printf("No se encontro tal marca.\n");
+	}
+	
+	system("pause");
+	
+}
 
+main(int argc, char *argv[]){
+	
+	char Linea[MAX_LARGO];
+	int opcion;
+	
+	//Lee archivo declarado en la consola y lo abre.
+	if(argc != 1){
+		printf("\nNo se ha ingresado un archivo correctamente.\nSe ingresaron %d cuando se esperan 2.\n",argc);
+		exit(EXIT_FAILURE);
+	}
+	
 	FILE *Vehiculos;
 	Vehiculos = fopen("vehiculos-diminuto.csv","r");
 	
-	struct Marcas *Marca;
-	Marca = NULL;
-	struct Modelos *Modelo;
-	Modelo = NULL;
-	struct Datos *AllDatos;
-	AllDatos = NULL;
-	
-	Inicio = 0;
-	
-	while(fgets(Linea,LARGO,Vehiculos) != NULL){
-		
-		for(ContPuntoComa = 0; ContPuntoComa < 9; ContPuntoComa++){
-			
-			Inicio = PuntoComa(Inicio,Linea,Dato);
-			
-			if(ContPuntoComa == 0){
-				Marca = Insertar_Marca(Marca,Dato);
-				printf("%s ",Marca->Marca);
-			}
-			if(ContPuntoComa == 1){
-				Modelo = Insertar_Modelo(Modelo,Dato);
-				printf("%s ",Modelo->Modelo);
-			}
-			if(ContPuntoComa == 2){
-				AllDatos = Insertar_Datos(AllDatos,Dato,ContPuntoComa);
-				printf("%d ",AllDatos->Year);
-			}
-			if(ContPuntoComa == 3){
-				AllDatos = Insertar_Datos(AllDatos,Dato,ContPuntoComa);
-				printf("%s ",AllDatos->Tipo);	
-			}
-			if(ContPuntoComa == 4){
-				AllDatos = Insertar_Datos(AllDatos,Dato,ContPuntoComa);
-				printf("%.1f ",AllDatos->Desplazamiento);
-			}
-			if(ContPuntoComa == 5){
-				AllDatos = Insertar_Datos(AllDatos,Dato,ContPuntoComa);
-				printf("%d ",AllDatos->Cilindros);
-			}
-			if(ContPuntoComa == 6){
-				AllDatos = Insertar_Datos(AllDatos,Dato,ContPuntoComa);
-				printf("%s ",AllDatos->Combustible);
-			}
-			if(ContPuntoComa == 7){
-				AllDatos = Insertar_Datos(AllDatos,Dato,ContPuntoComa);
-				printf("%s ",AllDatos->Cambio);
-			}
-			if(ContPuntoComa == 8){
-				AllDatos = Insertar_Datos(AllDatos,Dato,ContPuntoComa);
-				printf("%s ",AllDatos->Traccion);
-			}
-		
-		}
-		
-		printf("\n");
-		Inicio = 0;
+	//Realiza el 
+	struct Marca *inicio;
+	inicio = NULL;
 
+	if(Vehiculos != NULL){
+		while(fgets(Linea,MAX_LARGO,Vehiculos) != NULL){
+			inicio = leer_marca(inicio,Linea);
+		}
+		do{
+			system("cls");
+			printf("[|] Seleccione una opcion [|]\n");
+			printf("\n[1] Buscar apartir de rango de años\n");
+			printf("[2] Verificar si existe un modelo\n");
+			printf("[3] Salir\n");
+			
+			printf("\nOpcion a realizar: ");
+			opcion = 0;
+			scanf("%d",&opcion);
+			fflush(stdin);
+			
+			switch(opcion){
+				
+				system("cls");
+				
+				case 1:
+					buscar_auto(inicio);
+					break;
+				case 2:
+					//verificar(inicio);
+					break;
+				case 3:
+					break;
+				default:
+					break;
+
+			}
+			
+		}while(opcion != 3);
+		
+		fclose(Vehiculos);
+		
+	}else{
+		printf("Archivo ingresado no se encontro en la carpeta\n");
+		exit(EXIT_FAILURE);
 	}
-	
 }
